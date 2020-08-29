@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- <script src="three.js"></script>
+    <script src="GLTFLoader.js"></script>
+    <script src="OrbitControls.js"></script>
+    <script src="script.js"></script> -->
+
+    <script type="module">
+
+        import * as THREE from '../../build/three.module.js';
+        import {GLTFLoader} from './GLTFLoader.js';
+        import {OrbitControls} from './OrbitControls.js';
+    
+
+
+        let scene, camera, renderer, texture, model, modelLoader, redLight, blueLight, object;
+
+        init();
+        animate();
+        function init(){
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 20, 3000);
+            camera.position.set(100,10,100);
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            let controls = new OrbitControls( camera, renderer.domElement );
+            controls.update();
+
+            let light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 10);
+            scene.add( light );
+
+            const loader = new THREE.CubeTextureLoader();
+            texture = loader.load([
+                
+                'penguins/divine_ft.jpg',
+                'penguins/divine_bk.jpg',
+                'penguins/divine_up.jpg',
+                'penguins/divine_dn.jpg',
+                'penguins/divine_rt.jpg',
+                'penguins/divine_lf.jpg',     
+                
+            ])
+            scene.background = texture;
+
+            modelLoader = new GLTFLoader();
+            modelLoader.load('model/scene.gltf', function(gltf){
+                model = gltf.scene;
+                model.scale.set(0.1,0.1,0.1);
+                // model.position.set(10,10,100);
+                object.add(gltf.scene);
+
+            });   
+
+            object = new THREE.Group();
+            scene.add(object);
+            
+
+            redLight = new THREE.PointLight( 0xff0000, 2, 50 );
+            redLight.position.set(-10,0,0);
+            object.add( redLight );
+
+            blueLight = new THREE.PointLight( 0x0000ff, 2, 50 );
+            blueLight.position.set(10,4,0);
+            object.add( blueLight );
+
+        }
+
+
+        function animate(){
+            requestAnimationFrame(animate);
+            renderer.render(scene,camera);
+            let time = Date.now() * 0.005;
+            // // model.position.x = Math.sin( time * 0.7 ) * 30;
+            object.position.y = Math.cos( time * 0.5 ) * 20;
+            object.position.z = Math.cos( time * 0.3 ) * 60;
+
+            redLight.position.y = Math.cos( time * 0.5 ) * 20;
+            redLight.position.z = Math.cos( time * 0.3 ) * 30;
+
+            blueLight.position.y = Math.cos( time * 0.5 ) * 20;
+            blueLight.position.z = Math.cos( time * 0.3 ) * 30;
+            }
+
+    </script>
+</body>
+</html>
