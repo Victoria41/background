@@ -16,17 +16,19 @@
         import * as THREE from '../../build/three.module.js';
         import {GLTFLoader} from './GLTFLoader.js';
         import {OrbitControls} from './OrbitControls.js';
+        import { GUI } from   './dat.gui.module.js';
+        import { RectAreaLightHelper } from './helpers/RectAreaLightHelper.js';
     
 
 
-        let scene, camera, renderer, texture, model, modelLoader, redLight, blueLight, object;
+        let scene, camera, renderer, texture, model, modelLoader, redLight, blueLight, object, gui, reactLight;
 
         init();
         animate();
         function init(){
             scene = new THREE.Scene();
 
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 20, 3000);
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 20, 30000);
             camera.position.set(100,10,100);
 
             renderer = new THREE.WebGLRenderer();
@@ -39,6 +41,54 @@
             let light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 10);
             scene.add( light );
 
+
+            let arr = {
+                width: 10, 
+                height:10, 
+                intensity:20,
+                color: 0xffffff 
+            };
+            
+ 
+
+            reactLight = new THREE.RectAreaLight( arr.color, arr.intensity, arr.width, arr.height );
+            reactLight.position.set( 5, 5, 0 );
+            scene.add(reactLight);
+            let reactLightHelper = new RectAreaLightHelper( reactLight, 0xffffff );
+            console.log(reactLightHelper)
+            reactLightHelper.scale.x = reactLight.width;
+            reactLightHelper.scale.y = reactLight.height;
+            reactLightHelper.position.y = 80;
+            reactLight.add( reactLightHelper );
+            
+            gui = new GUI();
+            
+            let folder = gui.addFolder("Light");
+
+            folder.addColor(arr, "color").listen().onChange(function(e) {
+
+                reactLight.color.setHex(e);
+                reactLightHelper.color = e;
+                reactLightHelper.update();
+            });
+
+            folder.add(arr,'height',1,400).step(1).onChange(function (val) {
+                reactLight.height = val;
+                reactLightHelper.scale.y = val /2 
+                
+            })
+            folder.add(arr,'width',1,200).step(2).onChange(function (val) {
+                reactLight.width= val;
+                reactLightHelper.scale.x = val /2 
+                
+            })
+            folder.add(arr,'intensity',1,200).step(2).onChange(function (val) {
+                reactLight.intensity= val; 
+                
+            })
+
+
+          
             const loader = new THREE.CubeTextureLoader();
             texture = loader.load([
                 
@@ -75,14 +125,41 @@
 
         }
 
+            document.addEventListener('keyup', (e) => {
+                console.log(e.key)
+                if (e.key == "d"){
+                 object.position.z += 10
+                 object.position.x += 10;
+                object.rotation.y += 0.1;
+                console.log(1);
+                
+            }
+            else if(e.key == "a"){
+                 object.position.z -= 10;
+                 object.position.x -= 10; 
+                 object.rotation.y -= 0.1;
+                console.log(2);
+
+
+            }
+            else if (e.key == "w"){
+                object.position.y += 0.5
+                console.log(3)
+
+            }
+            else if (e.key =="s"){
+                object.position.y -= 0.5
+                console.log(4);
+
+            }
+            })
+
+
 
         function animate(){
             requestAnimationFrame(animate);
             renderer.render(scene,camera);
-            let time = Date.now() * 0.005;
-            // // model.position.x = Math.sin( time * 0.7 ) * 30;
-            object.position.y = Math.cos( time * 0.5 ) * 20;
-            object.position.z = Math.cos( time * 0.3 ) * 60;
+            let time = Date.now() * 0.005; 
 
             redLight.position.y = Math.cos( time * 0.5 ) * 20;
             redLight.position.z = Math.cos( time * 0.3 ) * 30;
